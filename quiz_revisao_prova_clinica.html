@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz de Revisão · Prova Clínica Médica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2f6fd;
+    --surface: #ffffff;
+    --surface-2: #eaf1fc;
+    --ink: #0b2148;
+    --ink-soft: #33487a;
+    --muted: #6b7fa8;
+    --line: #d7e3fa;
+    --accent: #2e5fd6;
+    --accent-ink: #ffffff;
+    --accent-soft: #dbe8ff;
+    --accent-2: #5488e5;
+    --deep: #0b3670;
+    --pale: #c7e4ff;
+    --mid: #92c1ff;
+    --good: #1f7a4c;
+    --good-bg: #e5f5ec;
+    --bad: #b13a3a;
+    --bad-bg: #fbe9e7;
+    --shadow: 0 1px 2px rgba(11,33,72,0.06), 0 8px 24px -12px rgba(11,33,72,0.18);
+    --radius: 14px;
+    --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --sans: 'IBM Plex Sans', -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #071229; --surface: #0d1c3c; --surface-2: #122650;
+      --ink: #e7eefc; --ink-soft: #b7c6ea; --muted: #7f92c2;
+      --line: #1f3468; --accent: #6f97f2; --accent-ink: #051230;
+      --accent-soft: #16265a; --accent-2: #92c1ff; --deep: #c7e4ff;
+      --good: #6fd39a; --good-bg: #113828; --bad: #e59084; --bad-bg: #3a1c1c;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 10px 30px -14px rgba(0,0,0,0.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #071229; --surface: #0d1c3c; --surface-2: #122650;
+    --ink: #e7eefc; --ink-soft: #b7c6ea; --muted: #7f92c2;
+    --line: #1f3468; --accent: #6f97f2; --accent-ink: #051230;
+    --accent-soft: #16265a; --accent-2: #92c1ff; --deep: #c7e4ff;
+    --good: #6fd39a; --good-bg: #113828; --bad: #e59084; --bad-bg: #3a1c1c;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 10px 30px -14px rgba(0,0,0,0.7);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 30px 24px 80px; }
+
+  header.hero {
+    background: radial-gradient(1100px 420px at 15% -10%, var(--pale), transparent 60%), var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-inner { max-width: 900px; margin: 0 auto; padding: 44px 24px 30px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; display: flex; align-items: center; gap: 8px;
+  }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  h1.title {
+    font-family: var(--serif); font-weight: 600; font-size: clamp(1.8rem, 4.2vw, 2.6rem);
+    margin: 10px 0 6px; color: var(--deep); text-wrap: balance; letter-spacing: -0.01em;
+  }
+  .subtitle { color: var(--ink-soft); max-width: 62ch; font-size: 1rem; }
+
+  .scoreboard-bar {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .scoreboard-inner { max-width: 900px; margin: 0 auto; padding: 0 24px; display: flex; gap: 14px; align-items: center; justify-content: flex-end; }
+  .scoreboard {
+    display: flex; gap: 18px; align-items: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 8px 18px; box-shadow: var(--shadow); font-family: var(--mono); font-size: 0.85rem;
+  }
+  .scoreboard b { font-size: 1rem; color: var(--accent); }
+  .progress-track { width: 110px; height: 6px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .25s ease; }
+
+  .quiz-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; }
+  .btn {
+    font-family: var(--sans); font-weight: 600; font-size: 0.85rem; cursor: pointer;
+    border-radius: 9px; padding: 9px 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.primary:hover { opacity: .92; color: var(--accent-ink); }
+
+  .qcard {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px 22px; margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .qmeta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .qnum { font-family: var(--mono); color: var(--accent); font-weight: 600; font-size: 0.82rem; }
+  .qtag { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--deep); background: var(--pale); padding: 3px 9px; border-radius: 999px; }
+  .qtext { font-size: 1.02rem; margin: 0 0 14px; color: var(--ink); text-wrap: balance; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    display: flex; gap: 10px; align-items: flex-start; text-align: left;
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+    background: transparent; color: var(--ink-soft); font-family: var(--sans); font-size: 0.94rem;
+    cursor: pointer; width: 100%;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+  .opt .letter {
+    font-family: var(--mono); font-weight: 600; font-size: 0.78rem;
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--muted);
+  }
+  .opt.correct { background: var(--good-bg); border-color: var(--good); color: var(--ink); }
+  .opt.correct .letter { background: var(--good); border-color: var(--good); color: #fff; }
+  .opt.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--ink); }
+  .opt.wrong .letter { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .opt:disabled { cursor: default; }
+  .explain {
+    margin-top: 12px; font-size: 0.88rem; color: var(--ink-soft);
+    background: var(--surface-2); border-radius: 10px; padding: 10px 14px; display: none;
+  }
+  .explain.show { display: block; }
+  .explain b { color: var(--accent); }
+
+  .results-banner {
+    display: none; text-align: center; padding: 26px; border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 24px;
+  }
+  .results-banner.show { display: block; }
+  .results-banner .big { font-family: var(--serif); font-size: 2.2rem; color: var(--accent); }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.82rem; padding: 30px 24px 10px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="dot"></span> Material de Estudo · Clínica Médica e Cirúrgica</div>
+    <h1 class="title">Quiz de Revisão — Prova Clínica Médica</h1>
+    <p class="subtitle">40 questões baseadas no material de revisão: tipos de Angina, classes do Choque Hipovolêmico, tipos de Choque, Asma, Insuficiência Cardíaca (frações de ejeção, IC esquerda x direita, congestão pulmonar x sistêmica) e DPOC.</p>
+  </div>
+</header>
+
+<div class="scoreboard-bar">
+  <div class="scoreboard-inner">
+    <span class="scoreboard">
+      <span>Respondidas <b id="answeredCount">0</b>/<span id="totalCount">0</span></span>
+      <span>Acertos <b id="correctCount">0</b></span>
+      <span class="progress-track"><span class="progress-fill" id="progressFill"></span></span>
+    </span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="quiz-toolbar">
+    <button class="btn primary" id="revealAllBtn">Ver resultado final</button>
+    <button class="btn" id="resetBtn">Refazer o quiz</button>
+  </div>
+
+  <div class="results-banner" id="resultsBanner">
+    <div class="big" id="resultsScore">0/0</div>
+    <p id="resultsMsg"></p>
+  </div>
+
+  <div id="quizContainer"></div>
+
+</div>
+
+<footer>Quiz de revisão gerado a partir do material de estudo · Clínica Médica e Cirúrgica</footer>
+
+<script>
+(function () {
+  var Q = [
+    ["A angina estável, a forma mais comum, caracteriza-se por:", ["Dor imprevisível, que ocorre em repouso, também chamada de pré-infarto", "Dor previsível, desencadeada por esforço físico ou estresse emocional, com isquemia transitória de 5 a 10 minutos", "Dor constante, presente o tempo todo, sem qualquer relação com esforço", "Ausência completa de dor, identificada apenas por exames"], 1, "A angina estável é a mais comum, previsível, geralmente desencadeada por esforço físico ou estresse emocional, com isquemia transitória durando entre 5 e 10 minutos."],
+    ["A angina instável, também chamada de pré-infarto, caracteriza-se por:", ["Dor previsível, que cede sempre em menos de 5 minutos", "Dor imprevisível, que pode ocorrer em repouso, por obstrução maior da oxigenação do coração, durando mais de 20 minutos", "Espasmo da artéria coronária, típico do início da manhã", "Bloqueio nervoso da dor, sem qualquer sintoma relatado"], 1, "A angina instável é imprevisível, podendo ocorrer em repouso, decorrente de obstrução maior da oxigenação do coração, com duração maior que 20 minutos — é considerada pré-infarto."],
+    ["A angina de Prinzmetal (variante) é caracterizada por:", ["Obstrução fixa por placa aterosclerótica extensa", "Espasmo da artéria coronária, surgindo tipicamente durante o sono ou logo pela manhã, tratada com bloqueadores dos canais de cálcio", "Dor relacionada exclusivamente a esforço físico intenso", "Ausência de qualquer tratamento eficaz"], 1, "A angina de Prinzmetal é causada pelo espasmo da coronária, surgindo tipicamente durante o sono ou pela manhã, sendo tratada com bloqueadores dos canais de cálcio."],
+    ["A angina silenciosa é aquela em que:", ["A dor é extremamente intensa e constante", "Existe um bloqueio nervoso da dor, comum em pacientes diabéticos, com marca-passo ou insuficiência cardíaca", "O paciente relata dor apenas à noite", "Não há qualquer forma de identificação possível"], 1, "A angina silenciosa ocorre por bloqueio nervoso da dor, comum em pacientes diabéticos, usuários de marca-passo ou com insuficiência cardíaca, sendo identificada por ECG e teste de esforço."],
+    ["Os métodos de identificação da angina silenciosa citados são:", ["Apenas a queixa verbal do paciente", "Eletrocardiograma e teste de esforço", "Apenas radiografia de tórax", "Apenas hemograma completo"], 1, "A angina silenciosa, por não causar dor perceptível, é identificada por eletrocardiograma e teste de esforço."],
+    ["O tratamento citado para a angina silenciosa é:", ["Apenas repouso absoluto, sem medicação", "Nitroglicerina", "Antibiótico de amplo espectro", "Insulina regular"], 1, "A nitroglicerina é citada como tratamento para a angina silenciosa, assim como para outras formas de angina."],
+    ["A angina refratária ou incapacitante caracteriza-se por:", ["Dor que nunca ocorre, mesmo em esforço extremo", "Dor constante, relatada pelo paciente o tempo todo", "Dor que dura exatos 5 minutos e desaparece", "Ausência total de diagnóstico possível"], 1, "Na angina refratária ou incapacitante, a pessoa relata dor constante, sentindo-a o tempo todo."],
+    ["No choque hipovolêmico Classe I (leve), a perda de volume sanguíneo e a pressão arterial são, respectivamente:", ["Perda de até 15%, com pressão arterial normal", "Perda de 30 a 40%, com pressão arterial criticamente baixa", "Perda de mais de 40%, com coma e anúria", "Perda de 15 a 30%, com palidez e sudorese intensas"], 0, "Na Classe I (leve), a perda é de até 15% do volume sanguíneo total, com FC levemente aumentada e pressão arterial normal."],
+    ["No choque hipovolêmico Classe II (moderado), espera-se:", ["Perda de até 15%, sem qualquer sintoma", "Perda de 15% a 30%, com aumento da FC, redução leve da PAS, palidez, sudorese e ansiedade", "Perda de mais de 40%, com anúria e coma", "Ausência completa de alterações hemodinâmicas"], 1, "Na Classe II (moderado), a perda é de 15 a 30% do volume sanguíneo, com FC aumentada, redução leve da PAS, palidez, sudorese e ansiedade."],
+    ["No choque hipovolêmico Classe III (grave), além da perda de 30 a 40% do volume, espera-se:", ["Pressão arterial normal, sem qualquer alteração de consciência", "FC significativamente aumentada, PAS substancialmente reduzida, pele fria e pegajosa, confusão mental e oligúria", "Apenas leve taquicardia, sem outros sinais", "Melhora espontânea sem necessidade de intervenção"], 1, "Na Classe III (grave), com perda de 30-40%, há FC muito aumentada, PAS substancialmente reduzida, pele fria e pegajosa, confusão mental e oligúria."],
+    ["No choque hipovolêmico Classe IV (muito grave), com perda de mais de 40% do volume sanguíneo, pode ocorrer:", ["Apenas taquicardia leve, sem outras alterações", "Coma, anúria e colapso cardiovascular iminente", "Pressão arterial normal mantida", "Resolução espontânea do quadro sem intervenção"], 1, "Na Classe IV (muito grave), com perda superior a 40%, pode haver coma, anúria e colapso cardiovascular iminente, exigindo intervenção imediata."],
+    ["Um paciente com perdas sanguíneas de aproximadamente 700 mL, FC = 98 bpm, FR = 20 mrm, pressão de pulso normal e ansiedade leve é classificado como choque hipovolêmico de qual classe?", ["Classe I", "Classe II", "Classe III", "Classe IV"], 1, "Esses achados (FC levemente elevada, perda moderada de volume, pressão de pulso ainda normal, sinais leves de hipoperfusão) correspondem à Classe II (moderado) de choque hipovolêmico."],
+    ["O choque hipovolêmico tem como causa principal:", ["Vasodilatação generalizada, sem perda de volume", "Perda de volume sanguíneo ou de líquidos, como em hemorragia, desidratação grave e queimaduras extensas", "Obstrução mecânica do fluxo sanguíneo", "Falha primária da bomba cardíaca"], 1, "O choque hipovolêmico é causado pela perda de volume sanguíneo ou de líquidos — hemorragia, desidratação grave, queimaduras extensas ou ascite."],
+    ["O choque distributivo tem como mecanismo central:", ["Perda maciça de volume sanguíneo", "Vasodilatação generalizada, fazendo o sangue ficar 'preso' nos vasos mesmo com volume normal", "Obstrução mecânica do fluxo sanguíneo por êmbolo", "Falha isolada da bomba cardíaca"], 1, "No choque distributivo, a vasodilatação generalizada faz o sangue ficar represado nos vasos periféricos, mesmo com volume sanguíneo normal."],
+    ["O choque obstrutivo é causado por:", ["Perda de líquidos por queimadura extensa", "Obstrução mecânica ao fluxo sanguíneo, como tamponamento cardíaco, pneumotórax hipertensivo ou embolia pulmonar maciça", "Vasodilatação generalizada sistêmica", "Falha direta da contratilidade miocárdica, sem obstrução"], 1, "O choque obstrutivo decorre de obstrução mecânica ao fluxo sanguíneo — tamponamento cardíaco, pneumotórax hipertensivo e embolia pulmonar maciça são exemplos citados."],
+    ["O choque cardiogênico tem como causa central:", ["Obstrução mecânica do fluxo sanguíneo", "Falha da bomba cardíaca, em que o coração não consegue bombear o sangue adequadamente", "Perda isolada de volume plasmático", "Vasodilatação generalizada sem outra alteração"], 1, "O choque cardiogênico é causado pela falha da bomba cardíaca, como em IAM extenso, arritmias graves, insuficiência cardíaca ou disfunção valvar."],
+    ["A posição recomendada para um paciente que apresenta sinais de choque é:", ["Fowler alta", "Trendelenburg", "Decúbito ventral", "Sentado, com pernas pendentes"], 1, "A posição de Trendelenburg (decúbito dorsal com elevação dos membros inferiores) é a recomendada para o paciente com sinais de choque, favorecendo o retorno venoso."],
+    ["No choque hipovolêmico, a inadequação do fluxo sanguíneo para os tecidos, sem tratamento, progride para:", ["Melhora espontânea da perfusão celular", "Hipóxia celular e morte celular, evoluindo para disfunção de órgãos e, por fim, morte", "Aumento imediato da oferta de oxigênio aos tecidos", "Normalização automática da pressão arterial"], 1, "Sem tratamento, a inadequação da oferta de oxigênio e nutrientes resulta em hipóxia celular e morte celular, progredindo até a disfunção de órgãos e morte."],
+    ["Independentemente da causa inicial do choque, são respostas fisiológicas comuns a todos os tipos:", ["Hipoperfusão dos tecidos, hipermetabolismo e ativação da resposta inflamatória", "Apenas hipertensão arterial sustentada", "Ausência completa de resposta inflamatória", "Aumento exclusivo da diurese"], 0, "Independentemente da causa inicial, os tipos de choque compartilham hipoperfusão tecidual, hipermetabolismo e ativação da resposta inflamatória."],
+    ["A asma é definida como:", ["Doença aguda autolimitada, sem relação com inflamação", "Doença inflamatória crônica das vias respiratórias", "Doença exclusivamente restritiva, sem broncoespasmo", "Condição puramente psicológica"], 1, "A asma é uma doença inflamatória crônica das vias respiratórias, provocando sintomas recorrentes de obstrução ao fluxo aéreo."],
+    ["São sintomas típicos da asma, EXCETO:", ["Aperto no peito e tosse", "Sibilância e dispneia", "Febre alta persistente como sintoma cardinal", "Dificuldade respiratória que piora à noite"], 2, "Os sintomas típicos da asma são aperto no peito, tosse, sibilância e dispneia — a febre alta persistente não é um sintoma cardinal da asma."],
+    ["São fatores ambientais relacionados a crises de asma, citados no material:", ["Poeira doméstica e poluição atmosférica", "Exposição solar moderada", "Ingestão adequada de água", "Prática regular de exercícios de alongamento"], 0, "A poeira doméstica e a poluição atmosférica são citadas como fatores ambientais que podem funcionar como desencadeantes de crises asmáticas."],
+    ["Em relação aos agentes virais e crises de asma, é correto afirmar que:", ["Rinovírus não possuem associação frequente com crises de asma", "Vírus sempre causam crises de asma exclusivamente por mecanismo bacteriano", "A causa das crises está sempre relacionada a agentes bacterianos, nunca virais", "Nenhum agente infeccioso está relacionado a crises de asma"], 0, "Segundo o material, agentes virais como o rinovírus possuem associação frequente com crises de asma — a causa não está sempre relacionada a agentes bacterianos."],
+    ["Em relação aos dispositivos inalatórios para crianças, os inaladores dosimetrados com espaçadores, comparados aos nebulizadores convencionais, proporcionam:", ["Menor eficácia e maior desperdício", "Maior eficácia, menos desperdício, ganho de tempo e menos efeitos colaterais", "Os mesmos resultados, sem qualquer vantagem", "Maior incidência de efeitos colaterais sistêmicos"], 1, "Os inaladores dosimetrados por via inalatória com espaçadores, em relação aos nebulizadores convencionais, proporcionam maior eficácia, menos desperdício, ganho de tempo e menos efeitos colaterais."],
+    ["Para crianças, o dispositivo indicado para oferecer broncodilatadores é citado como:", ["Comprimidos de liberação prolongada", "Broncodilatadores de curta duração por via inalatória", "Apenas injeção intramuscular", "Apenas solução oral de xarope"], 1, "Para crianças, são indicados broncodilatadores de curta duração por via inalatória."],
+    ["A insuficiência cardíaca se desenvolve quando a contração ou o relaxamento do coração se tornam inadequados devido a:", ["Excesso de força e flexibilidade do músculo cardíaco", "Fraqueza ou rigidez do músculo cardíaco (ou ambos)", "Aumento da elasticidade miocárdica, sem qualquer prejuízo", "Ausência completa de causa identificável"], 1, "A IC se desenvolve quando a ação de contração ou relaxamento do coração é inadequada, devido à fraqueza ou rigidez do músculo cardíaco, ou ambos."],
+    ["Em relação aos sintomas da insuficiência cardíaca, é correto afirmar que:", ["A maioria dos pacientes apresenta sintomas graves desde o início", "A maioria das pessoas não apresenta sintomas inicialmente; a falta de ar e a fadiga se agravam ao longo de dias e meses", "Os sintomas sempre surgem de forma súbita e intensa", "Não há qualquer progressão dos sintomas ao longo do tempo"], 1, "Na IC, a maioria das pessoas não apresenta sintomas inicialmente; a falta de ar e a fadiga tendem a se agravar gradualmente ao longo de dias e meses."],
+    ["A Insuficiência Cardíaca com Fração de Ejeção Reduzida (ICFER) é definida por:", ["FE ≥ 50%", "FE ≤ 40%", "FE entre 41% e 49%", "FE indetectável por exame"], 1, "ICFER (IC com fração de ejeção reduzida) é definida por FE menor ou igual a 40%."],
+    ["A Insuficiência Cardíaca com Fração de Ejeção Preservada (ICFEP) é definida por:", ["FE ≤ 40%", "FE ≥ 50%", "FE entre 20% e 30%", "FE sempre igual a 0%"], 1, "ICFEP (IC com fração de ejeção preservada) é definida por FE maior ou igual a 50%."],
+    ["A Insuficiência Cardíaca com Fração de Ejeção Levemente Reduzida (ICFELR), também chamada de borderline ou área cinzenta, corresponde a:", ["FE ≥ 50%", "FE ≤ 40%", "FE entre 41% e 49%", "FE acima de 70%"], 2, "A ICFELR (borderline/área cinzenta/intermediária) corresponde a FE entre 41% e 49%, situando-se entre a reduzida e a preservada."],
+    ["São manifestações características da insuficiência ventricular ESQUERDA:", ["Edema periférico e hepatomegalia", "Ortopneia e dispneia paroxística noturna", "Ascite isolada, sem qualquer sintoma respiratório", "Distensão venosa jugular isolada"], 1, "A insuficiência ventricular esquerda causa manifestações como ortopneia e dispneia paroxística noturna, relacionadas à congestão pulmonar."],
+    ["São manifestações características da insuficiência ventricular DIREITA:", ["Ortopneia e dispneia paroxística noturna isoladamente", "Edema, dor abdominal e distensão venosa jugular (refluxo hepatojugular) por aumento da pressão venosa", "Ausência completa de sintomas sistêmicos", "Exclusivamente sintomas respiratórios, sem edema"], 1, "A insuficiência ventricular direita causa edema, dor abdominal e distensão venosa jugular, com refluxo hepatojugular, por aumento da pressão venosa."],
+    ["Na insuficiência cardíaca esquerda, é possível observar o sinal do 'refluxo hepatojugular', que ocorre devido a:", ["Compressão do fígado que leva ao deslocamento de sangue para a veia cava", "Ausência completa de circulação hepática", "Redução da pressão venosa central", "Hipertrofia isolada do ventrículo esquerdo sem repercussão venosa"], 0, "O refluxo hepatojugular ('compressão do fígado') pode levar ao deslocamento de sangue para a veia cava, sendo um sinal observável mesmo em pacientes com insuficiência ventricular esquerda."],
+    ["A congestão PULMONAR, relacionada à insuficiência cardíaca, manifesta-se por:", ["Edema periférico, hepatomegalia e ascite", "Dispneia, edema pulmonar e ortopneia", "Apenas dor abdominal isolada", "Ausência de qualquer sintoma respiratório"], 1, "A congestão pulmonar manifesta-se por dispneia (falta de ar), edema pulmonar e ortopneia."],
+    ["A congestão SISTÊMICA, relacionada à insuficiência cardíaca, manifesta-se por:", ["Dispneia e ortopneia isoladamente", "Edema periférico, hepatomegalia (aumento do fígado) e ascite (líquido no abdômen)", "Exclusivamente sintomas neurológicos", "Ausência completa de sinais físicos"], 1, "A congestão sistêmica manifesta-se por edema periférico, hepatomegalia e ascite (acúmulo de líquido no abdômen)."],
+    ["A bronquite crônica, manifestação da DPOC, é definida clinicamente pela presença de:", ["Apenas dispneia aos esforços, sem outros sintomas", "Tosse e expectoração", "Exclusivamente febre alta recorrente", "Ausência completa de sintomas respiratórios"], 1, "A bronquite crônica é definida clinicamente pela presença de tosse e expectoração, sendo uma das manifestações da DPOC."],
+    ["O enfisema pulmonar, manifestação da DPOC, é definido anatomicamente como:", ["Redução dos espaços aéreos distais ao bronquíolo terminal", "Aumento dos espaços aéreos distais ao bronquíolo terminal", "Ausência de qualquer alteração estrutural pulmonar", "Espessamento exclusivo da pleura, sem relação com os alvéolos"], 1, "O enfisema pulmonar é definido anatomicamente como o aumento dos espaços aéreos distais ao bronquíolo terminal, com destruição das paredes alveolares."],
+    ["Na fisiopatologia da DPOC, citam-se como mecanismos envolvidos:", ["Redução da elastase e aumento dos inibidores da elastase", "Aumento da elastase, inativação dos inibidores da elastase e bloqueio da neoformação de elastina", "Ausência completa de alterações enzimáticas pulmonares", "Aumento exclusivo da produção de surfactante"], 1, "Os mecanismos citados na fisiopatologia da DPOC incluem aumento da elastase, inativação dos inibidores da elastase e bloqueio da neoformação de elastina."],
+    ["O tabagismo é responsável por qual proporção das causas determináveis da DPOC?", ["10 a 20%", "40 a 50%", "80 a 90%", "Menos de 5%"], 2, "O tabagismo é responsável por 80 a 90% das causas determináveis da DPOC, sendo o principal fator de risco."],
+    ["São sintomas da DPOC citados no material, EXCETO:", ["Falta de ar e tosse crônica", "Expectoração regular e sibilância", "Bronquites frequentes no inverno", "Melhora espontânea da função pulmonar com o tempo, sem qualquer tratamento"], 3, "Os sintomas da DPOC incluem falta de ar, tosse crônica, expectoração regular, sibilância e bronquites frequentes no inverno — a doença não melhora espontaneamente sem tratamento, sendo progressiva."]
+  ];
+
+  var quizContainer = document.getElementById("quizContainer");
+  var letters = ["A", "B", "C", "D"];
+  var answered = new Array(Q.length).fill(false);
+  var correctFlags = new Array(Q.length).fill(false);
+
+  document.getElementById("totalCount").textContent = Q.length;
+
+  function buildQuiz() {
+    var frag = document.createDocumentFragment();
+    Q.forEach(function (item, idx) {
+      var qtext = item[0], opts = item[1], correctIdx = item[2], explain = item[3];
+      var card = document.createElement("div");
+      card.className = "qcard";
+
+      var meta = document.createElement("div");
+      meta.className = "qmeta";
+      meta.innerHTML = '<span class="qnum">Questão ' + (idx + 1) + ' / ' + Q.length + '</span><span class="qtag">PROVA</span>';
+      card.appendChild(meta);
+
+      var qEl = document.createElement("p");
+      qEl.className = "qtext";
+      qEl.textContent = qtext;
+      card.appendChild(qEl);
+
+      var optsWrap = document.createElement("div");
+      optsWrap.className = "options";
+
+      opts.forEach(function (optText, oi) {
+        var b = document.createElement("button");
+        b.className = "opt";
+        b.type = "button";
+        b.innerHTML = '<span class="letter">' + letters[oi] + '</span><span>' + optText + '</span>';
+        b.addEventListener("click", function () {
+          if (answered[idx]) return;
+          answered[idx] = true;
+          correctFlags[idx] = (oi === correctIdx);
+          var allOpts = optsWrap.querySelectorAll(".opt");
+          allOpts.forEach(function (o, k) {
+            o.disabled = true;
+            if (k === correctIdx) o.classList.add("correct");
+            else if (k === oi) o.classList.add("wrong");
+          });
+          card.querySelector(".explain").classList.add("show");
+          updateScoreboard();
+        });
+        optsWrap.appendChild(b);
+      });
+      card.appendChild(optsWrap);
+
+      var exp = document.createElement("div");
+      exp.className = "explain";
+      exp.innerHTML = "<b>Explicação:</b> " + explain;
+      card.appendChild(exp);
+
+      frag.appendChild(card);
+    });
+    quizContainer.appendChild(frag);
+  }
+
+  function updateScoreboard() {
+    var answeredN = answered.filter(Boolean).length;
+    var correctN = correctFlags.filter(Boolean).length;
+    document.getElementById("answeredCount").textContent = answeredN;
+    document.getElementById("correctCount").textContent = correctN;
+    document.getElementById("progressFill").style.width = (answeredN / Q.length * 100) + "%";
+  }
+
+  document.getElementById("revealAllBtn").addEventListener("click", function () {
+    var answeredN = answered.filter(Boolean).length;
+    var correctN = correctFlags.filter(Boolean).length;
+    var banner = document.getElementById("resultsBanner");
+    document.getElementById("resultsScore").textContent = correctN + "/" + Q.length;
+    var pct = Math.round((correctN / Q.length) * 100);
+    var msg = "Continue estudando — revise os pontos com mais erros.";
+    if (pct >= 90) msg = "Excelente domínio do conteúdo!";
+    else if (pct >= 70) msg = "Muito bom! Reforce alguns pontos específicos.";
+    else if (pct >= 50) msg = "Bom começo — releia o material.";
+    if (answeredN < Q.length) msg = "Você respondeu " + answeredN + " de " + Q.length + " questões. " + msg;
+    document.getElementById("resultsMsg").textContent = msg;
+    banner.classList.add("show");
+    banner.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    answered.fill(false);
+    correctFlags.fill(false);
+    quizContainer.innerHTML = "";
+    document.getElementById("resultsBanner").classList.remove("show");
+    buildQuiz();
+    updateScoreboard();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  buildQuiz();
+  updateScoreboard();
+})();
+</script>
+</body>
+</html>
