@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz de Enfermagem – Envelhecimento</title>
+<style>
+:root{
+  --teal-900:#0b4f4a; --teal-700:#0f766e; --teal-500:#14b8a6; --teal-100:#ccfbf1; --teal-50:#effcf9;
+  --blue:#0ea5e9; --ink:#12302f; --muted:#5b7a78; --ok:#16a34a; --ok-bg:#dcfce7; --bad:#dc2626; --bad-bg:#fee2e2;
+  --card:#ffffff; --bg:#e8f6f4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:linear-gradient(160deg,var(--bg),#f7fdfc);color:var(--ink);min-height:100vh;display:flex;justify-content:center;padding:20px 14px}
+.app{width:100%;max-width:760px}
+header{background:linear-gradient(135deg,var(--teal-900),var(--teal-700));color:#fff;border-radius:18px 18px 0 0;padding:22px 24px;display:flex;align-items:center;gap:14px}
+.cross{width:44px;height:44px;flex:none;background:#fff;border-radius:12px;display:grid;place-items:center}
+.cross svg{width:26px;height:26px}
+header h1{font-size:1.25rem;line-height:1.2}
+header p{font-size:.85rem;opacity:.85;margin-top:2px}
+.card{background:var(--card);border-radius:0 0 18px 18px;box-shadow:0 10px 30px rgba(15,118,110,.15);padding:24px}
+.bar{height:8px;background:var(--teal-100);border-radius:99px;overflow:hidden}
+.bar>div{height:100%;width:0;background:linear-gradient(90deg,var(--teal-500),var(--blue));transition:width .35s}
+.meta{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin:10px 0 18px;font-weight:600}
+.q{font-size:1.15rem;font-weight:700;line-height:1.4;margin-bottom:18px;color:var(--teal-900)}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--teal-50);border:2px solid var(--teal-100);border-radius:12px;padding:13px 14px;font-size:1rem;color:var(--ink);cursor:pointer;transition:.15s;font-family:inherit}
+.opt:hover:not(:disabled){border-color:var(--teal-500);transform:translateY(-1px)}
+.opt .l{flex:none;width:28px;height:28px;border-radius:50%;background:var(--teal-700);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.opt.ok{background:var(--ok-bg);border-color:var(--ok)}
+.opt.ok .l{background:var(--ok)}
+.opt.bad{background:var(--bad-bg);border-color:var(--bad)}
+.opt.bad .l{background:var(--bad)}
+.opt:disabled{cursor:default}
+.fb{display:none;margin-top:16px;padding:14px 16px;border-left:5px solid var(--teal-500);background:var(--teal-50);border-radius:10px;font-size:.95rem;line-height:1.5}
+.fb b{color:var(--teal-900)}
+.actions{display:flex;justify-content:flex-end;margin-top:18px}
+.btn{background:linear-gradient(135deg,var(--teal-700),var(--teal-500));color:#fff;border:0;border-radius:12px;padding:12px 26px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(20,184,166,.35)}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.center{text-align:center}
+.score{font-size:3.4rem;font-weight:800;color:var(--teal-700);margin:6px 0}
+.badge{display:inline-block;background:var(--teal-100);color:var(--teal-900);padding:6px 16px;border-radius:99px;font-weight:700;margin-bottom:14px}
+.stats{display:flex;gap:12px;justify-content:center;margin:18px 0;flex-wrap:wrap}
+.stat{background:var(--teal-50);border:2px solid var(--teal-100);border-radius:12px;padding:12px 22px}
+.stat b{display:block;font-size:1.5rem;color:var(--teal-700)}
+.hidden{display:none}
+.start p{color:var(--muted);margin:10px 0 22px;line-height:1.5}
+@media(max-width:480px){.q{font-size:1.05rem}.card{padding:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="cross"><svg viewBox="0 0 24 24"><path fill="#0f766e" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/></svg></div>
+    <div><h1>Quiz de Enfermagem</h1><p>Envelhecimento: sistema imunológico, mudanças biológicas e sentidos</p></div>
+  </header>
+  <div class="card">
+    <div id="start" class="start center">
+      <div class="badge">50 questões</div>
+      <h2 style="color:var(--teal-900)">Pronto para revisar?</h2>
+      <p>Responda cada questão e veja a explicação logo em seguida. As alternativas são embaralhadas a cada tentativa.</p>
+      <button class="btn" onclick="startQuiz()">Começar</button>
+    </div>
+    <div id="quiz" class="hidden">
+      <div class="bar"><div id="prog"></div></div>
+      <div class="meta"><span id="count"></span><span id="pts"></span></div>
+      <div class="q" id="qt"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb"></div>
+      <div class="actions"><button class="btn" id="next" onclick="next()" disabled>Próxima</button></div>
+    </div>
+    <div id="end" class="hidden center">
+      <div class="badge" id="level"></div>
+      <div class="score" id="final"></div>
+      <p id="msg" style="color:var(--muted)"></p>
+      <div class="stats"><div class="stat"><b id="sc"></b>Acertos</div><div class="stat"><b id="er"></b>Erros</div></div>
+      <button class="btn" onclick="startQuiz()">Refazer quiz</button>
+    </div>
+  </div>
+</div>
+<script>
+// Formato: [pergunta, CORRETA, errada1, errada2, errada3, explicação]
+const DATA=[
+["Qual é a função central do sistema imunológico?","Distinguir o que é próprio do não próprio e eliminar células e moléculas não próprias potencialmente deletérias","Produzir hormônios reguladores do metabolismo","Transportar oxigênio até os tecidos","Digerir e absorver nutrientes","O sistema imunitário reconhece o que é próprio e elimina o que é não próprio e potencialmente deletério."],
+["Qualquer molécula capaz de ser reconhecida pelo sistema imunitário é chamada de:","Antígeno (Ag)","Anticorpo (Ac)","Complemento","Defensina","Antígeno (Ag) é toda molécula reconhecível pelo sistema imunitário."],
+["O sistema imunológico também é capaz de reconhecer e destruir:","Células anormais originárias dos tecidos do hospedeiro","Somente vírus e bactérias","Apenas células já mortas","Somente toxinas ambientais","Além de agentes externos, ele destrói células anormais do próprio hospedeiro (ex.: células tumorais)."],
+["Compõem a primeira linha de defesa do corpo:","Pele, córneas e mucosas dos tratos respiratório, gastrointestinal e geniturinário","Linfócitos T e linfócitos B","Timo e baço","Anticorpos IgG e complemento","Essas estruturas formam barreiras físicas, a primeira linha de defesa."],
+["Na epiderme externa queratinizada, os queratinócitos secretam:","Peptídeos antimicrobianos (defensinas)","Insulina","Lactoferrina","Imunoglobulina A secretora","Os queratinócitos da pele secretam defensinas, peptídeos antimicrobianos."],
+["Quais substâncias inibidoras de microrganismos são secretadas pelas glândulas da pele?","Ácido láctico e ácidos graxos","Glicose e glicogênio","Lisozima e lactoferrina","Insulina e glucagon","As glândulas cutâneas secretam substâncias como ácido láctico e ácidos graxos."],
+["Qual grupo de células imunes reside na pele?","Mastócitos, linfócitos intraepiteliais e células de Langerhans","Hepatócitos e osteoblastos","Neurônios e astrócitos","Hemácias e plaquetas","Mastócitos, linfócitos intraepiteliais e células de Langerhans (amostragem de antígeno) residem na pele."],
+["Nas córneas, as lágrimas contêm:","Defensinas","Hemoglobina","Insulina","Glicogênio","As lágrimas contêm defensinas, que ajudam na defesa ocular."],
+["Quais células residem nas córneas?","Macrófagos e células dendríticas","Neutrófilos e células T","Plaquetas e hemácias","Eosinófilos e basófilos","Macrófagos e células dendríticas residem nas córneas."],
+["Durante uma infecção na córnea, são recrutados pela vasculatura límbica:","Células T e neutrófilos fagocíticos","Hepatócitos e adipócitos","Osteoclastos e condrócitos","Células de Schwann e astrócitos","Outras células imunes, como células T e neutrófilos fagocíticos, são recrutadas."],
+["O muco secretado pelo epitélio respiratório, gastrointestinal e geniturinário contém:","Lisozima, lactoferrina e IgA secretora (SIgA)","Insulina, glucagon e cortisol","Hemoglobina, mioglobina e ferritina","Queratina, melanina e colágeno","Essas são substâncias antimicrobianas presentes no muco das mucosas."],
+["A sigla SIgA corresponde a:","Imunoglobulina A secretora","Imunoglobulina A sérica","Interleucina A secretora","Antígeno A de superfície","SIgA = anticorpo de imunoglobulina (Ig) A secretora."],
+["Com o envelhecimento, o sistema imunitário tende a:","Distinguir pior o próprio do não próprio, favorecendo autoanticorpos e doenças autoimunes","Tornar-se mais seletivo e eficaz","Aumentar a produção de complemento","Eliminar todas as células anormais","Há maior chance de autoanticorpos e doenças autoimunes no idoso."],
+["Nos idosos, os macrófagos destroem bactérias e células cancerosas de forma:","Mais vagarosa, contribuindo para maior incidência de câncer","Mais rápida, reduzindo infecções","Idêntica à do adulto jovem","Seletiva apenas para vírus","A ação mais lenta dos macrófagos contribui para o aumento do câncer entre idosos."],
+["O timo é a glândula marcadora de qual tipo celular?","Linfócitos T","Linfócitos B","Hemácias","Plaquetas","O encolhimento do timo afeta a maturação dos linfócitos T."],
+["Com o encolhimento do timo, as células T:","Respondem menos rapidamente aos antígenos","Respondem mais rapidamente","Passam a produzir anticorpos","Deixam de existir completamente","As células T respondem menos rapidamente aos antígenos."],
+["O encolhimento do timo resulta em:","Menos linfócitos capazes de responder a novos antígenos","Mais linfócitos para novos antígenos","Aumento da afinidade dos anticorpos","Maior produção de complemento","Há menos linfócitos aptos a responder a antígenos novos."],
+["Na imunodeficiência do idoso, o organismo:","Produz menos complemento em resposta a infecções bacterianas","Produz mais complemento","Elimina mais rapidamente as bactérias","Detecta melhor partículas estranhas","O idoso produz menos complemento e tem mais dificuldade para combater doenças."],
+["Sobre os anticorpos no envelhecimento, é correto afirmar:","A concentração não diminui muito, mas a afinidade de ligação ao antígeno diminui","A concentração cai drasticamente, mas a afinidade aumenta","Tanto concentração quanto afinidade aumentam","Nada se altera","A afinidade anticorpo-antígeno reduzida contribui para maior incidência de infecções."],
+["A menor afinidade anticorpo-antígeno contribui para maior incidência de:","Pneumonia, influenza, endocardite infecciosa e tétano","Asma, gota, anemia e miopia","Apendicite, cálculo renal e hérnia","Catapora, caxumba e sarampo apenas","Essas doenças são mais frequentes e mais letais em idosos."],
+["Por que as vacinas são menos eficazes nos idosos?","Há menor capacidade de formar memória imunológica","Idosos não têm antígenos","Vacinas só funcionam em crianças","Há excesso de linfócitos T","As mudanças imunológicas prejudicam a formação de memória imunológica."],
+["A redução da função celular no envelhecimento caracteriza-se por:","Pouca liberação de ATP e grande produção de radicais livres","Muita liberação de ATP e poucos radicais livres","Aumento da síntese proteica","Aumento da massa celular","Menos energia (ATP) e mais radicais livres."],
+["Na redução da função metabólica, diminuem:","Proteínas, gordura, cálcio e zinco","Apenas carboidratos","Apenas sódio e potássio","Somente vitamina K","Há queda de proteínas, gordura, cálcio e zinco."],
+["A redução de fibras alimentares é importante porque as fibras são essenciais para:","O funcionamento intestinal","A visão","A audição","A contração cardíaca","Fibras são importantes para o funcionamento do intestino."],
+["As vitaminas C e D estão reduzidas principalmente em:","Idosos institucionalizados","Adultos jovens","Atletas","Gestantes","A redução é mais evidente nos idosos institucionalizados."],
+["Qual percentual do magnésio corporal está combinado com cálcio e fósforo no osso?","70%","30%","50%","10%","70% do magnésio está combinado com cálcio e fósforo no osso."],
+["Cerca de 30% do magnésio participa de:","Contração muscular e transmissão dos impulsos nervosos","Formação de hemácias","Produção de bile","Síntese de melanina","Esses 30% atuam na contração muscular e na transmissão nervosa."],
+["A redução dos elementos alimentares no idoso resulta em:","Desnutrição e perda de peso","Obesidade e hipertensão","Aumento de estatura","Aumento de massa muscular","A redução resulta em desnutrição e perda de peso."],
+["A desnutrição no idoso envolve a interação entre fatores:","Fisiológicos, mórbidos e neuropsiquiátricos","Genéticos, climáticos e econômicos","Apenas hormonais","Apenas ambientais","Fatores fisiológicos x mórbidos x neuropsiquiátricos."],
+["A perda de estatura no envelhecimento é de aproximadamente:","1 cm por década","5 cm por década","1 cm por ano","0,1 cm por década","Perda da estatura: 1 cm por década."],
+["Qual alteração de composição corporal ocorre no envelhecimento?","Aumento do tecido adiposo","Aumento do teor de água corporal","Aumento da massa óssea","Aumento da massa muscular","Há aumento do tecido adiposo e diminuição da água corporal."],
+["Entre as alterações gerais do envelhecimento, está a:","Diminuição do teor de H2O corporal","Aumento do teor de H2O corporal","Aumento de pelos","Aumento da elasticidade da pele","O corpo do idoso tem menos água."],
+["Qual lesão cutânea é comum no envelhecimento, sobretudo em áreas expostas como as mãos?","Mancha senil","Urticária","Vitiligo agudo","Cisto sebáceo","A mancha senil é característica da pele envelhecida."],
+["A pele do idoso é mais propícia a:","Lesões e infecções","Maior hidratação","Maior espessura","Regeneração acelerada","A pele envelhecida é mais vulnerável a lesões e infecções."],
+["A presbiopia ocorre aproximadamente aos:","45 anos","20 anos","30 anos","80 anos","A presbiopia surge por volta dos 45 anos."],
+["Qual é a causa da presbiopia?","Perda da elasticidade e do poder de acomodação do cristalino","Opacificação total do cristalino","Aumento da pressão intraocular","Descolamento de retina","O cristalino perde elasticidade e capacidade de acomodação."],
+["Na presbiopia, o indivíduo:","Não enxerga com nitidez objetos próximos (vista cansada)","Não enxerga objetos distantes","Perde totalmente a visão","Enxerga tudo em preto e branco","Há dificuldade para ver de perto, a chamada vista cansada."],
+["A perda auditiva gradual e bilateral relacionada ao envelhecimento chama-se:","Presbiacusia","Presbiopia","Disgeusia","Anosmia","Presbiacusia é a perda auditiva do envelhecimento."],
+["A presbiacusia geralmente afeta mais:","A capacidade de ouvir sons agudos e entender a fala","A audição de sons graves apenas","O equilíbrio apenas","A produção de cerúmen","Ela prejudica sons agudos e a compreensão da fala."],
+["A presbiacusia é a causa mais comum de perda auditiva, especialmente em pessoas com mais de:","65 anos","25 anos","35 anos","45 anos","É a principal causa de perda auditiva acima de 65 anos."],
+["A redução do afluxo sensorial para o hipotálamo está relacionada à alteração de:","Olfato e gustação","Visão e audição","Tato e equilíbrio","Memória e linguagem","O slide associa olfato e gustação a essa redução."],
+["A alteração do olfato no envelhecimento decorre de:","Perda de receptores, ressecamento e afinamento da mucosa nasal e deterioração dos nervos olfativos","Aumento do número de receptores","Espessamento da mucosa nasal","Aumento da sensibilidade olfativa","Há perda de receptores e deterioração dos nervos olfativos."],
+["Sobre as alterações de gustação no envelhecimento:","Há mudanças degenerativas nas células, sem alteração no número de papilas gustativas","O número de papilas gustativas aumenta","Todas as papilas desaparecem","Não há qualquer alteração celular","Ocorrem alterações degenerativas, mas o número de papilas se mantém."],
+["No envelhecimento ocorre ligeira diminuição da capacidade de detectar o gosto:","Salgado","Doce","Amargo","Azedo","Há ligeira diminuição na detecção do gosto salgado."],
+["Como se chama a perda completa da gustação?","Ageusia","Hipogeusia","Disgeusia","Presbiacusia","Ageusia = perda completa da gustação."],
+["Hipogeusia significa:","Diminuição da gustação","Perda completa da gustação","Alteração da percepção gustativa","Aumento da gustação","Hipogeusia é a diminuição da gustação."],
+["Disgeusia é a:","Alteração da percepção gustativa","Perda completa da gustação","Diminuição da gustação","Perda do olfato","Disgeusia = alteração da percepção gustativa."],
+["Sobre as fibras musculares no envelhecimento:","Diminuem com a idade (cerca de 50% acima de 80 anos)","Aumentam em número","Permanecem inalteradas","Diminuem apenas 5%","As fibras musculares diminuem, chegando a cerca de 50% acima dos 80 anos."],
+["As fibras elásticas, com o envelhecimento:","Perdem elasticidade e sofrem fragmentação, desgaste e calcificações","Tornam-se mais elásticas","Multiplicam-se","Não sofrem alteração","Perdem elasticidade, fragmentam-se, desgastam-se e calcificam."],
+["A massa óssea começa a diminuir após a:","Terceira década de vida (mais acentuado após a menopausa)","Primeira década de vida","Quinta década, apenas em homens","Oitava década","A perda óssea inicia após os 30 anos e acentua-se após a menopausa."],
+["Cartilagens, tendões e ligamentos no envelhecimento tornam-se:","Rígidos e espessos","Flexíveis e finos","Mais elásticos","Mais hidratados","Esses tecidos tornam-se rígidos e espessos, reduzindo a mobilidade."]
+];
+let order=[],cur=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function startQuiz(){order=DATA.map((_,i)=>i);cur=0;score=0;
+  $('start').classList.add('hidden');$('end').classList.add('hidden');$('quiz').classList.remove('hidden');render();}
+function render(){
+  answered=false;const d=DATA[order[cur]];
+  $('count').textContent='Questão '+(cur+1)+' de '+DATA.length;
+  $('pts').textContent='Acertos: '+score;
+  $('prog').style.width=(cur/DATA.length*100)+'%';
+  $('qt').textContent=d[0];
+  const opts=shuffle(d.slice(1,5).map((t,i)=>({t,ok:i===0})));
+  const box=$('opts');box.innerHTML='';
+  opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt';
+    b.innerHTML='<span class="l">'+'ABCD'[i]+'</span><span>'+o.t+'</span>';
+    b.onclick=()=>pick(b,o.ok,opts,d[5]);
+    box.appendChild(b);
+  });
+  $('fb').style.display='none';
+  $('next').disabled=true;
+  $('next').textContent=cur===DATA.length-1?'Ver resultado':'Próxima';
+}
+function pick(btn,ok,opts,exp){
+  if(answered)return;answered=true;
+  const bs=[...document.querySelectorAll('.opt')];
+  bs.forEach((b,i)=>{b.disabled=true;if(opts[i].ok)b.classList.add('ok')});
+  if(ok)score++;else btn.classList.add('bad');
+  $('pts').textContent='Acertos: '+score;
+  const fb=$('fb');fb.innerHTML='<b>'+(ok?'✔ Correto! ':'✘ Incorreto. ')+'</b>'+exp;
+  fb.style.borderLeftColor=ok?'#16a34a':'#dc2626';fb.style.display='block';
+  $('next').disabled=false;
+}
+function next(){cur++;if(cur<DATA.length)render();else finish();}
+function finish(){
+  $('quiz').classList.add('hidden');$('end').classList.remove('hidden');
+  const pct=Math.round(score/DATA.length*100);
+  $('final').textContent=pct+'%';$('sc').textContent=score;$('er').textContent=DATA.length-score;
+  let lvl,msg;
+  if(pct>=90){lvl='Excelente';msg='Domínio impecável do conteúdo!'}
+  else if(pct>=70){lvl='Muito bom';msg='Ótimo desempenho! Revise os pontos que errou.'}
+  else if(pct>=50){lvl='Bom';msg='Você está no caminho. Vale revisar os slides novamente.'}
+  else{lvl='Precisa revisar';msg='Releia o material com calma e tente de novo.'}
+  $('level').textContent=lvl;$('msg').textContent=msg;
+}
+</script>
+</body>
+</html>
