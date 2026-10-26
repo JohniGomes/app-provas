@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz de Enfermagem 2 – Envelhecimento</title>
+<style>
+:root{
+  --teal-900:#0b4f4a; --teal-700:#0f766e; --teal-500:#14b8a6; --teal-100:#ccfbf1; --teal-50:#effcf9;
+  --blue:#0ea5e9; --ink:#12302f; --muted:#5b7a78; --ok:#16a34a; --ok-bg:#dcfce7; --bad:#dc2626; --bad-bg:#fee2e2;
+  --card:#ffffff; --bg:#e8f6f4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:linear-gradient(160deg,var(--bg),#f7fdfc);color:var(--ink);min-height:100vh;display:flex;justify-content:center;padding:20px 14px}
+.app{width:100%;max-width:760px}
+header{background:linear-gradient(135deg,var(--teal-900),var(--teal-700));color:#fff;border-radius:18px 18px 0 0;padding:22px 24px;display:flex;align-items:center;gap:14px}
+.cross{width:44px;height:44px;flex:none;background:#fff;border-radius:12px;display:grid;place-items:center}
+.cross svg{width:26px;height:26px}
+header h1{font-size:1.25rem;line-height:1.2}
+header p{font-size:.85rem;opacity:.85;margin-top:2px}
+.card{background:var(--card);border-radius:0 0 18px 18px;box-shadow:0 10px 30px rgba(15,118,110,.15);padding:24px}
+.bar{height:8px;background:var(--teal-100);border-radius:99px;overflow:hidden}
+.bar>div{height:100%;width:0;background:linear-gradient(90deg,var(--teal-500),var(--blue));transition:width .35s}
+.meta{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin:10px 0 18px;font-weight:600}
+.q{font-size:1.15rem;font-weight:700;line-height:1.4;margin-bottom:18px;color:var(--teal-900)}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--teal-50);border:2px solid var(--teal-100);border-radius:12px;padding:13px 14px;font-size:1rem;color:var(--ink);cursor:pointer;transition:.15s;font-family:inherit}
+.opt:hover:not(:disabled){border-color:var(--teal-500);transform:translateY(-1px)}
+.opt .l{flex:none;width:28px;height:28px;border-radius:50%;background:var(--teal-700);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.opt.ok{background:var(--ok-bg);border-color:var(--ok)}
+.opt.ok .l{background:var(--ok)}
+.opt.bad{background:var(--bad-bg);border-color:var(--bad)}
+.opt.bad .l{background:var(--bad)}
+.opt:disabled{cursor:default}
+.fb{display:none;margin-top:16px;padding:14px 16px;border-left:5px solid var(--teal-500);background:var(--teal-50);border-radius:10px;font-size:.95rem;line-height:1.5}
+.fb b{color:var(--teal-900)}
+.actions{display:flex;justify-content:flex-end;margin-top:18px}
+.btn{background:linear-gradient(135deg,var(--teal-700),var(--teal-500));color:#fff;border:0;border-radius:12px;padding:12px 26px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(20,184,166,.35)}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.center{text-align:center}
+.score{font-size:3.4rem;font-weight:800;color:var(--teal-700);margin:6px 0}
+.badge{display:inline-block;background:var(--teal-100);color:var(--teal-900);padding:6px 16px;border-radius:99px;font-weight:700;margin-bottom:14px}
+.stats{display:flex;gap:12px;justify-content:center;margin:18px 0;flex-wrap:wrap}
+.stat{background:var(--teal-50);border:2px solid var(--teal-100);border-radius:12px;padding:12px 22px}
+.stat b{display:block;font-size:1.5rem;color:var(--teal-700)}
+.hidden{display:none}
+.start p{color:var(--muted);margin:10px 0 22px;line-height:1.5}
+@media(max-width:480px){.q{font-size:1.05rem}.card{padding:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="cross"><svg viewBox="0 0 24 24"><path fill="#0f766e" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/></svg></div>
+    <div><h1>Quiz de Enfermagem · Parte 2</h1><p>Envelhecimento: casos clínicos, imunidade, nutrição e sentidos</p></div>
+  </header>
+  <div class="card">
+    <div id="start" class="start center">
+      <div class="badge">50 questões novas</div>
+      <h2 style="color:var(--teal-900)">Vamos praticar mais?</h2>
+      <p>Casos clínicos e questões de interpretação. Cada resposta traz uma explicação. As alternativas são embaralhadas a cada tentativa.</p>
+      <button class="btn" onclick="startQuiz()">Começar</button>
+    </div>
+    <div id="quiz" class="hidden">
+      <div class="bar"><div id="prog"></div></div>
+      <div class="meta"><span id="count"></span><span id="pts"></span></div>
+      <div class="q" id="qt"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb"></div>
+      <div class="actions"><button class="btn" id="next" onclick="next()" disabled>Próxima</button></div>
+    </div>
+    <div id="end" class="hidden center">
+      <div class="badge" id="level"></div>
+      <div class="score" id="final"></div>
+      <p id="msg" style="color:var(--muted)"></p>
+      <div class="stats"><div class="stat"><b id="sc"></b>Acertos</div><div class="stat"><b id="er"></b>Erros</div></div>
+      <button class="btn" onclick="startQuiz()">Refazer quiz</button>
+    </div>
+  </div>
+</div>
+<script>
+// Formato: [pergunta, CORRETA, errada1, errada2, errada3, explicação]
+const DATA=[
+["Qual das estruturas abaixo NÃO faz parte da primeira linha de defesa (barreiras físicas)?","Timo","Pele","Córneas","Mucosa do trato respiratório","Pele, córneas e mucosas formam as barreiras físicas; o timo é um órgão ligado à maturação dos linfócitos T."],
+["Paciente de 52 anos refere dificuldade para enxergar de perto desde os 45 anos, com vista cansada. Qual o quadro mais provável?","Presbiopia","Presbiacusia","Ageusia","Disgeusia","A presbiopia surge por volta dos 45 anos por perda de elasticidade e acomodação do cristalino."],
+["Idoso de 78 anos tem dificuldade para entender a fala, principalmente sons agudos, nos dois ouvidos. O quadro sugere:","Presbiacusia","Presbiopia","Hipogeusia","Alteração do olfato","Presbiacusia: perda auditiva gradual e bilateral, que afeta sons agudos e a compreensão da fala."],
+["Idosa se queixa de que os alimentos têm menos sabor do que antes. Esse quadro corresponde a:","Hipogeusia","Ageusia","Disgeusia","Presbiopia","Hipogeusia é a diminuição da gustação."],
+["Idoso refere que os alimentos têm gosto diferente do normal (percepção alterada). Esse quadro é:","Disgeusia","Ageusia","Hipogeusia","Presbiacusia","Disgeusia é a alteração da percepção gustativa."],
+["Paciente que não sente nenhum gosto apresenta:","Ageusia","Hipogeusia","Disgeusia","Presbiopia","Ageusia é a perda completa da gustação."],
+["Idoso de 80 anos com pneumonia. Qual alteração imunológica do envelhecimento pode contribuir?","Diminuição da afinidade de ligação do anticorpo ao antígeno","Aumento da afinidade anticorpo-antígeno","Aumento da produção de complemento","Aumento de linfócitos T novos","A menor afinidade dos anticorpos contribui para maior incidência de pneumonia e de morte por ela."],
+["Idoso de 68 anos não percebe o cheiro de gás na cozinha. Qual a base fisiológica mais coerente?","Perda de receptores e deterioração dos nervos olfativos","Aumento do número de receptores olfativos","Espessamento da mucosa nasal","Aumento da umidade da mucosa nasal","No envelhecimento há perda de receptores, ressecamento e afinamento da mucosa nasal e deterioração dos nervos olfativos."],
+["Qual das células abaixo NÃO é uma célula imune residente na pele?","Hepatócito","Mastócito","Linfócito intraepitelial","Célula de Langerhans","Os hepatócitos são células do fígado; as demais residem na pele."],
+["Assinale a afirmativa correta sobre antígeno:","É qualquer molécula capaz de ser reconhecida pelo sistema imunitário","É sempre um anticorpo","É exclusivamente uma bactéria","É uma célula de defesa","Antígeno (Ag) é toda molécula reconhecível pelo sistema imunitário."],
+["Qual alteração NÃO é esperada no sistema imunológico do idoso?","Maior rapidez de resposta das células T a novos antígenos","Resposta mais lenta das células T","Menor produção de complemento","Macrófagos mais lentos","No idoso, as células T respondem menos rapidamente."],
+["O aumento da incidência de câncer entre idosos relaciona-se, segundo o material, a:","Destruição mais vagarosa de células cancerosas pelos macrófagos","Aumento do número de macrófagos","Maior produção de anticorpos","Aumento do timo","Macrófagos mais lentos contribuem para o aumento do câncer em idosos."],
+["Qual glândula, que encolhe com a idade, é a marcadora dos linfócitos T?","Timo","Tireoide","Hipófise","Suprarrenal","O encolhimento do timo tem papel importante na imunodeficiência do idoso."],
+["O encolhimento do timo leva a qual consequência?","Menos linfócitos capazes de responder a novos antígenos","Mais linfócitos para novos antígenos","Aumento de autoimunidade zero","Maior memória vacinal","Há menos linfócitos aptos a responder a antígenos novos."],
+["Qual afirmação sobre a imunodeficiência do idoso está INCORRETA?","Detecta melhor as partículas estranhas","Detecta pior as partículas estranhas","Produz menos complemento nas infecções bacterianas","Tem dificuldade aumentada para combater doenças","O idoso é menos apto a detectar partículas estranhas."],
+["Sobre a concentração de anticorpos no idoso, é correto dizer que:","Não diminui significativamente, mas a afinidade cai","Diminui drasticamente","Aumenta muito","Desaparece","A afinidade de ligação ao antígeno é que diminui."],
+["Nas defesas locais, as defensinas são encontradas:","Na pele (queratinócitos) e nas lágrimas","Apenas no sangue","Apenas no fígado","Apenas nos ossos","Defensinas são secretadas pela pele e estão nas lágrimas."],
+["Macrófagos e células dendríticas residem em qual estrutura?","Córneas","Timo","Ossos longos","Cartilagens","Esses dois tipos celulares residem nas córneas."],
+["Qual conjunto de doenças é citado como mais incidente e letal em idosos pela menor afinidade dos anticorpos?","Pneumonia, influenza, endocardite infecciosa e tétano","Miopia, presbiopia e catarata","Gota, artrite e osteoporose","Anemia, diabetes e hipertensão","Esse é o conjunto citado no material."],
+["Uma razão para as vacinas serem menos eficazes no idoso é:","Menor capacidade de gerar memória imunológica","Ausência de antígenos na vacina","Excesso de timo","Aumento de linfócitos T","As mudanças imunes reduzem a formação de memória imunológica."],
+["Qual substância NÃO é citada como antimicrobiana do muco?","Insulina","Lisozima","Lactoferrina","IgA secretora","Insulina é hormônio; as demais são antimicrobianas do muco."],
+["Quais células são recrutadas pela vasculatura límbica durante infecção na córnea?","Células T e neutrófilos fagocíticos","Hemácias e plaquetas","Osteoblastos e osteoclastos","Adipócitos e fibroblastos","Células T e neutrófilos fagocíticos são recrutados."],
+["Qual é a alteração celular característica do envelhecimento?","Pouco ATP e muitos radicais livres","Muito ATP e poucos radicais livres","Muito ATP e muitos radicais livres","Pouco ATP e poucos radicais livres","Menos energia e mais radicais livres."],
+["Radicais livres no envelhecimento são:","Produzidos em grande quantidade","Produzidos em pequena quantidade","Totalmente ausentes","Convertidos em ATP","A redução da função celular inclui grande produção de radicais livres."],
+["Qual dos itens NÃO é citado entre os elementos reduzidos na função metabólica?","Sódio","Zinco","Cálcio","Magnésio","Citados: proteínas, gordura, cálcio, zinco, fibras, vitaminas C e D e magnésio."],
+["A redução de vitaminas C e D é mais marcante em:","Idosos institucionalizados","Crianças","Adultos jovens","Atletas","O material destaca os idosos institucionalizados."],
+["A redução de fibras alimentares é relevante principalmente para:","O funcionamento intestinal","A visão","A audição","A voz","Fibras são importantes para o funcionamento intestinal."],
+["Se 70% do magnésio está combinado a cálcio e fósforo no osso, os outros 30% atuam em:","Contração muscular e transmissão de impulsos nervosos","Produção de hemácias","Digestão de gorduras","Síntese de melanina","Os 30% restantes participam da contração muscular e dos impulsos nervosos."],
+["O magnésio no osso está combinado a quais minerais?","Cálcio e fósforo","Sódio e potássio","Ferro e cobre","Zinco e iodo","70% do magnésio se combina com cálcio e fósforo no osso."],
+["A redução dos elementos alimentares no idoso leva a:","Desnutrição e perda de peso","Ganho de peso e obesidade","Aumento de estatura","Aumento de massa muscular","O material cita desnutrição e perda de peso."],
+["Quais fatores interagem na desnutrição do idoso?","Fisiológicos, mórbidos e neuropsiquiátricos","Apenas genéticos","Apenas climáticos","Apenas financeiros","Fatores fisiológicos x mórbidos x neuropsiquiátricos."],
+["Considerando perda de 1 cm por década, quantos centímetros uma pessoa perde em 3 décadas?","3 cm","1 cm","10 cm","30 cm","1 cm por década x 3 décadas = 3 cm."],
+["Qual par de alterações de composição corporal ocorre no envelhecimento?","Aumento do tecido adiposo e diminuição da água corporal","Diminuição do tecido adiposo e aumento da água","Aumento de ambos","Diminuição de ambos","Há mais gordura e menos H2O corporal."],
+["Qual alteração NÃO ocorre na pele no envelhecimento, segundo o material?","Aumento do teor de água","Perda de pelos","Mancha senil","Pele mais propícia a lesões e infecções","O teor de água corporal diminui."],
+["Ao cuidar de um idoso, a enfermagem deve dar atenção especial à pele porque ela é:","Mais propícia a lesões e infecções","Mais espessa e resistente","Mais hidratada","Imune a infecções","A pele do idoso é mais vulnerável a lesões e infecções."],
+["A mancha senil corresponde a:","Lesão pigmentada da pele envelhecida","Infecção bacteriana","Úlcera por pressão","Lesão alérgica aguda","É uma mancha pigmentada comum na pele do idoso."],
+["Qual estrutura do olho perde elasticidade e poder de acomodação na presbiopia?","Cristalino","Córnea","Retina","Nervo óptico","A presbiopia decorre de alteração do cristalino."],
+["A presbiopia ocorre aproximadamente a partir de:","45 anos","15 anos","25 anos","80 anos","Ocorre em torno dos 45 anos."],
+["A presbiacusia é a causa mais comum de perda auditiva especialmente acima de:","65 anos","20 anos","30 anos","40 anos","É a causa mais comum, sobretudo em maiores de 65 anos."],
+["A presbiacusia é descrita como perda auditiva:","Gradual e bilateral","Súbita e unilateral","Apenas temporária","Apenas congênita","Gradual e bilateral, associada ao envelhecimento."],
+["A deterioração dos nervos olfativos contribui para a alteração de qual sentido?","Olfato","Visão","Audição","Tato","Faz parte da alteração do olfato no envelhecimento."],
+["No envelhecimento, a mucosa nasal sofre:","Ressecamento e afinamento","Espessamento e hidratação","Aumento de receptores","Regeneração total","Ressecamento e afinamento da mucosa nasal prejudicam o olfato."],
+["A redução do afluxo sensorial para o hipotálamo está associada a alterações de:","Olfato e gustação","Visão e audição","Equilíbrio e marcha","Memória e fala","O material associa olfato e gustação a esse afluxo reduzido."],
+["Quanto às papilas gustativas no envelhecimento:","O número de papilas não se altera, mas as células sofrem mudanças degenerativas","O número aumenta","Todas desaparecem","Não há mudanças nas células","Não há alteração no número de papilas."],
+["Qual sabor tem ligeira diminuição na capacidade de detecção no idoso?","Salgado","Doce","Azedo","Umami","Ocorre ligeira diminuição na detecção do gosto salgado."],
+["As fibras musculares diminuem cerca de quanto acima dos 80 anos?","50%","5%","10%","90%","Diminuem cerca de 50% acima de 80 anos."],
+["Qual alteração ocorre nas fibras elásticas com o envelhecimento?","Perda de elasticidade, fragmentação, desgaste e calcificações","Aumento da elasticidade","Multiplicação celular","Nenhuma alteração","Esse é o padrão descrito para as fibras elásticas."],
+["A diminuição da massa óssea inicia após:","A terceira década de vida","A primeira década","A sexta década apenas","A oitava década","A massa óssea diminui após a terceira década."],
+["A perda de massa óssea é mais acentuada em qual situação?","Após a menopausa","Durante a gestação","Na infância","Na adolescência","É mais acentuada após a menopausa."],
+["Cartilagens, tendões e ligamentos no envelhecimento ficam:","Rígidos e espessos","Finos e flexíveis","Mais elásticos","Mais hidratados","Tornam-se rígidos e espessos."]
+];
+let order=[],cur=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function startQuiz(){order=DATA.map((_,i)=>i);cur=0;score=0;
+  $('start').classList.add('hidden');$('end').classList.add('hidden');$('quiz').classList.remove('hidden');render();}
+function render(){
+  answered=false;const d=DATA[order[cur]];
+  $('count').textContent='Questão '+(cur+1)+' de '+DATA.length;
+  $('pts').textContent='Acertos: '+score;
+  $('prog').style.width=(cur/DATA.length*100)+'%';
+  $('qt').textContent=d[0];
+  const opts=shuffle(d.slice(1,5).map((t,i)=>({t,ok:i===0})));
+  const box=$('opts');box.innerHTML='';
+  opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt';
+    b.innerHTML='<span class="l">'+'ABCD'[i]+'</span><span>'+o.t+'</span>';
+    b.onclick=()=>pick(b,o.ok,opts,d[5]);
+    box.appendChild(b);
+  });
+  $('fb').style.display='none';
+  $('next').disabled=true;
+  $('next').textContent=cur===DATA.length-1?'Ver resultado':'Próxima';
+}
+function pick(btn,ok,opts,exp){
+  if(answered)return;answered=true;
+  const bs=[...document.querySelectorAll('.opt')];
+  bs.forEach((b,i)=>{b.disabled=true;if(opts[i].ok)b.classList.add('ok')});
+  if(ok)score++;else btn.classList.add('bad');
+  $('pts').textContent='Acertos: '+score;
+  const fb=$('fb');fb.innerHTML='<b>'+(ok?'✔ Correto! ':'✘ Incorreto. ')+'</b>'+exp;
+  fb.style.borderLeftColor=ok?'#16a34a':'#dc2626';fb.style.display='block';
+  $('next').disabled=false;
+}
+function next(){cur++;if(cur<DATA.length)render();else finish();}
+function finish(){
+  $('quiz').classList.add('hidden');$('end').classList.remove('hidden');
+  const pct=Math.round(score/DATA.length*100);
+  $('final').textContent=pct+'%';$('sc').textContent=score;$('er').textContent=DATA.length-score;
+  let lvl,msg;
+  if(pct>=90){lvl='Excelente';msg='Domínio impecável do conteúdo!'}
+  else if(pct>=70){lvl='Muito bom';msg='Ótimo desempenho! Revise os pontos que errou.'}
+  else if(pct>=50){lvl='Bom';msg='Você está no caminho. Vale revisar os slides novamente.'}
+  else{lvl='Precisa revisar';msg='Releia o material com calma e tente de novo.'}
+  $('level').textContent=lvl;$('msg').textContent=msg;
+}
+</script>
+</body>
+</html>
