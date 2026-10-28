@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz de Enfermagem 3 – Demência e Idoso Frágil</title>
+<style>
+:root{
+  --teal-900:#0b4f4a; --teal-700:#0f766e; --teal-500:#14b8a6; --teal-100:#ccfbf1; --teal-50:#effcf9;
+  --blue:#0ea5e9; --ink:#12302f; --muted:#5b7a78; --ok:#16a34a; --ok-bg:#dcfce7; --bad:#dc2626; --bad-bg:#fee2e2;
+  --card:#ffffff; --bg:#e8f6f4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:linear-gradient(160deg,var(--bg),#f7fdfc);color:var(--ink);min-height:100vh;display:flex;justify-content:center;padding:20px 14px}
+.app{width:100%;max-width:760px}
+header{background:linear-gradient(135deg,var(--teal-900),var(--teal-700));color:#fff;border-radius:18px 18px 0 0;padding:22px 24px;display:flex;align-items:center;gap:14px}
+.cross{width:44px;height:44px;flex:none;background:#fff;border-radius:12px;display:grid;place-items:center}
+.cross svg{width:26px;height:26px}
+header h1{font-size:1.25rem;line-height:1.2}
+header p{font-size:.85rem;opacity:.85;margin-top:2px}
+.card{background:var(--card);border-radius:0 0 18px 18px;box-shadow:0 10px 30px rgba(15,118,110,.15);padding:24px}
+.bar{height:8px;background:var(--teal-100);border-radius:99px;overflow:hidden}
+.bar>div{height:100%;width:0;background:linear-gradient(90deg,var(--teal-500),var(--blue));transition:width .35s}
+.meta{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin:10px 0 18px;font-weight:600}
+.q{font-size:1.15rem;font-weight:700;line-height:1.4;margin-bottom:18px;color:var(--teal-900)}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--teal-50);border:2px solid var(--teal-100);border-radius:12px;padding:13px 14px;font-size:1rem;color:var(--ink);cursor:pointer;transition:.15s;font-family:inherit}
+.opt:hover:not(:disabled){border-color:var(--teal-500);transform:translateY(-1px)}
+.opt .l{flex:none;width:28px;height:28px;border-radius:50%;background:var(--teal-700);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.opt.ok{background:var(--ok-bg);border-color:var(--ok)}
+.opt.ok .l{background:var(--ok)}
+.opt.bad{background:var(--bad-bg);border-color:var(--bad)}
+.opt.bad .l{background:var(--bad)}
+.opt:disabled{cursor:default}
+.fb{display:none;margin-top:16px;padding:14px 16px;border-left:5px solid var(--teal-500);background:var(--teal-50);border-radius:10px;font-size:.95rem;line-height:1.5}
+.fb b{color:var(--teal-900)}
+.actions{display:flex;justify-content:flex-end;margin-top:18px}
+.btn{background:linear-gradient(135deg,var(--teal-700),var(--teal-500));color:#fff;border:0;border-radius:12px;padding:12px 26px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(20,184,166,.35)}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.center{text-align:center}
+.score{font-size:3.4rem;font-weight:800;color:var(--teal-700);margin:6px 0}
+.badge{display:inline-block;background:var(--teal-100);color:var(--teal-900);padding:6px 16px;border-radius:99px;font-weight:700;margin-bottom:14px}
+.stats{display:flex;gap:12px;justify-content:center;margin:18px 0;flex-wrap:wrap}
+.stat{background:var(--teal-50);border:2px solid var(--teal-100);border-radius:12px;padding:12px 22px}
+.stat b{display:block;font-size:1.5rem;color:var(--teal-700)}
+.hidden{display:none}
+.start p{color:var(--muted);margin:10px 0 22px;line-height:1.5}
+@media(max-width:480px){.q{font-size:1.05rem}.card{padding:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="cross"><svg viewBox="0 0 24 24"><path fill="#0f766e" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/></svg></div>
+    <div><h1>Quiz de Enfermagem · Parte 3</h1><p>Demência e Pessoa Idosa Frágil</p></div>
+  </header>
+  <div class="card">
+    <div id="start" class="start center">
+      <div class="badge">80 questões</div>
+      <h2 style="color:var(--teal-900)">Pronto para o desafio?</h2>
+      <p>Funções cognitivas, tipos de demência, diagnóstico, tratamento, cuidados e estratificação clínico-funcional do idoso. Cada resposta traz uma explicação. As questões e alternativas são embaralhadas a cada tentativa.</p>
+      <button class="btn" onclick="startQuiz()">Começar</button>
+    </div>
+    <div id="quiz" class="hidden">
+      <div class="bar"><div id="prog"></div></div>
+      <div class="meta"><span id="count"></span><span id="pts"></span></div>
+      <div class="q" id="qt"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb"></div>
+      <div class="actions"><button class="btn" id="next" onclick="next()" disabled>Próxima</button></div>
+    </div>
+    <div id="end" class="hidden center">
+      <div class="badge" id="level"></div>
+      <div class="score" id="final"></div>
+      <p id="msg" style="color:var(--muted)"></p>
+      <div class="stats"><div class="stat"><b id="sc"></b>Acertos</div><div class="stat"><b id="er"></b>Erros</div></div>
+      <button class="btn" onclick="startQuiz()">Refazer quiz</button>
+    </div>
+  </div>
+</div>
+<script>
+// Formato: [pergunta, CORRETA, errada1, errada2, errada3, explicação]
+const DATA=[
+// ===== DEMÊNCIA =====
+["A cognição é o conjunto de funções cerebrais formadas por:","Memória, função executiva, linguagem, praxia, gnosia e função visuoespacial","Apenas memória e atenção","Somente linguagem e raciocínio matemático","Funções motoras e sensitivas exclusivamente","Segundo o material, a cognição reúne memória, função executiva, linguagem, praxia, gnosia e função visuoespacial."],
+["Memória é a capacidade de:","Registrar, armazenar e recuperar informações, experiências e aprendizados ao longo do tempo","Executar um ato motor","Reconhecer estímulos visuais, auditivos e táteis","Localizar-se no espaço","Essa é a definição de memória apresentada nos slides."],
+["A capacidade de planejamento, antecipação, sequenciamento e monitoramento de tarefas complexas corresponde a:","Função executiva","Gnosia","Praxia","Linguagem","Esses são os componentes da função executiva."],
+["Linguagem, como função cognitiva, é a capacidade de:","Compreensão e expressão da linguagem oral e escrita","Executar um ato motor","Reconhecer estímulos táteis","Planejar tarefas complexas","Linguagem envolve compreender e expressar a fala e a escrita."],
+["A capacidade de executar um ato motor chama-se:","Praxia","Gnosia","Afasia","Disartria","Praxia é a capacidade de executar um ato motor."],
+["Qual função cognitiva é a capacidade de reconhecer estímulos visuais, auditivos e táteis?","Gnosia","Praxia","Função executiva","Memória","Gnosia é reconhecer e dar significado aos estímulos (objetos, pessoas, sons e formas)."],
+["A capacidade de localização no espaço e de percepção das relações dos objetos entre si é a:","Função visuoespacial","Praxia","Linguagem","Função executiva","Essa é a definição de função visuoespacial."],
+["A capacidade de decidir, junto com o humor (motivação), é fundamental para:","A manutenção da autonomia","A produção de anticorpos","O controle da pressão arterial","A absorção de nutrientes","O funcionamento integrado das funções cognitivas sustenta a decisão e, com o humor, a autonomia."],
+["Quem identificou, em Frankfurt, o primeiro caso de demência do tipo Alzheimer, na paciente Auguste Deter?","Alois Alzheimer","James Parkinson","Arnold Pick","Emil Kraepelin","O slide cita Alois Alzheimer e a paciente Auguste Deter (primeiro caso identificado em 1901)."],
+["Sobre a demência, é correto afirmar que:","É uma síndrome, não uma doença","É uma doença com causa única","Sugere uma etiologia específica","É rara e sem relevância para a saúde pública","Demência é termo básico, não sugere etiologia, é uma síndrome, condição clínica comum e problema de saúde pública."],
+["Para caracterizar demência, a perda de habilidades mentais deve ser grave o suficiente para interferir nas AVD, após descartar:","Depressão e delírio","Hipertensão e diabetes","Anemia e desnutrição","Osteoporose e artrite","O slide diz: descartados depressão e delírio."],
+["A característica comum a todos os tipos de demência é ser:","Degenerativa, progressiva e fatal","Aguda, reversível e benigna","Transitória e curável","Restrita a idosos acima de 90 anos","Todos os tipos de demência são degenerativos, progressivos e fatais."],
+["Sobre o nível de consciência na demência:","Não há perda de consciência","A perda de consciência é o sintoma inicial","O paciente permanece sempre não responsivo a estímulos","O alerta comportamental está ausente desde o início","Na demência não há perda de consciência; perda de consciência é ausência ou extrema diminuição do alerta comportamental."],
+["Uma idosa não reconhece o rosto do próprio filho, embora enxergue normalmente. Esse quadro é compatível com:","Prosopagnosia (um tipo de agnosia)","Disartria","Apraxia","Afasia","Agnosia é a perda da capacidade de reconhecer ou dar significado; a prosopagnosia afeta o reconhecimento de rostos."],
+["O enfraquecimento ou perda do poder de captação, manipulação e expressão de palavras como símbolos de pensamento, por lesão em centros cerebrais, chama-se:","Afasia","Disartria","Apraxia","Agnosia","Afasia (fasia = falar) decorre de lesões cerebrais, não de defeito no mecanismo auditivo ou fonador."],
+["Idoso com dificuldade para articular as palavras apresenta:","Disartria","Afasia","Apraxia","Agnosia","Disartria é a dificuldade em articular as palavras."],
+["Idoso com força preservada não consegue mais escovar os dentes nem executar gestos precisos. O quadro é de:","Apraxia","Afasia","Prosopagnosia","Delírio","Apraxia é a perda da capacidade de executar movimentos e gestos precisos."],
+["Uma ideia ou pensamento que não corresponde à realidade é chamada de:","Delírio","Apraxia","Gnosia","Disartria","Essa é a definição de delírio apresentada no material."],
+["Paciente com demência apresenta agressividade, ciúme exagerado e comportamento de acasalamento indiscriminado. Isso caracteriza:","Mudança de personalidade com comportamentos inadequados","Declínio cognitivo normal do envelhecimento","Presbiacusia","Apenas efeito de medicação","Agressividade, ciúme exagerado e acasalamento indiscriminado são comportamentos inadequados da mudança de personalidade."],
+["A função executiva também é conhecida como:","Controle cognitivo e sistema supervisor atencional","Sistema límbico","Memória sensorial","Percepção visuoespacial","Inclui memória de trabalho, raciocínio, flexibilidade de tarefas, resolução de problemas, planejamento e execução."],
+["Na demência de grau leve:","Mantém-se a autonomia e a higiene, mas há deterioração significativa das atividades laborais e sociais","O paciente exige controle contínuo","O paciente perdeu totalmente a capacidade de se valer a si mesmo","Não há qualquer prejuízo funcional","Leve: autonomia e higiene preservadas, com prejuízo importante do trabalho e da vida social."],
+["Na demência de grau moderado, o doente:","Não é de todo autônomo e necessita de controle preventivo","Mantém total autonomia","Exige controle contínuo por ter perdido toda a capacidade de se valer","Está em coma","Moderada: autonomia parcial e necessidade de controle preventivo."],
+["Na demência grave, é necessário:","Controle contínuo, pois o paciente perdeu totalmente a capacidade de se valer a si mesmo","Apenas controle preventivo","Nenhuma supervisão","Apenas acompanhamento anual","Grave: dependência total e controle contínuo."],
+["A forma mais comum e crescente de demência na população mundial é a doença de Alzheimer, atingindo:","50% a 70% dos casos","5% a 10% dos casos","15% a 20% dos casos","90% a 100% dos casos","Segundo o slide, o Alzheimer atinge de 50% a 70% dos casos."],
+["A doença de Alzheimer é caracterizada por duas anormalidades cerebrais:","Placas amiloides (placas senis) e emaranhados ou fusos neurofibrilares","Corpos de Lewy e príons","Desmielinização e hidrocefalia","Infartos múltiplos e hemorragias","As placas amiloides (senis) e os emaranhados neurofibrilares caracterizam o Alzheimer."],
+["Na fisiopatologia do Alzheimer, a predisposição genética envolve os cromossomos:","21, 14 e 19","1, 2 e 3","7, 9 e 11","X e Y","O esquema cita os cromossomos 21, 14 e 19, com metabolismo anormal da proteína precursora amiloide (PPA)."],
+["Qual sequência representa a fisiopatologia do Alzheimer?","Metabolismo anormal da PPA → Aβ → formação de amiloide → placas senis e fusos neurofibrilares → disfunção neuronal → morte celular → demência","Morte celular → placas senis → PPA → demência","Fusos neurofibrilares → infarto → hemorragia → demência","Dopamina baixa → rigidez → demência","Esse é o fluxograma apresentado no slide de fisiopatologia."],
+["A sigla LATE significa:","Encefalopatia TDP-43 límbico-predominante relacionada com a idade","Doença linfática tardia do envelhecimento","Lesão axonal traumática encefálica","Leucoencefalopatia aguda tóxica extrapiramidal","LATE = encefalopatia TDP-43 límbico-predominante relacionada com a idade, tão habitual quanto o Alzheimer."],
+["A proteína TDP-43 também está implicada em outra doença do sistema neural, a:","Esclerose lateral amiotrófica","Doença de Creutzfeldt-Jakob","Doença de Huntington","Hidrocefalia de pressão normal","O slide cita a esclerose lateral amiotrófica como exemplo; sinais de LATE aparecem em mais de 20% dos cérebros de pessoas com mais de 80 anos."],
+["A demência vascular é:","A segunda mais comum, causada por injúria cerebral de problemas cerebrovasculares ou cardiovasculares","A mais comum de todas","Causada por príons","Causada exclusivamente por trauma craniano","Demência vascular: 2ª mais comum; a forma de infartos múltiplos pode ser vista por SPECT."],
+["Na demência de corpos de Lewy, os sintomas decorrem do:","Acúmulo de corpos de Lewy no núcleo dos neurônios","Acúmulo de príons","Déficit de tiamina","Excesso de líquor","Os corpos de Lewy são prolongamentos neuronais dilatados com inclusões fusiformes ou ovoides."],
+["A demência frontotemporal caracteriza-se pela degeneração de células nervosas dos lobos frontais e temporais, com acúmulo de:","Uma forma incomum da proteína tau em emaranhados neurofibrilares","Príons","Corpos de Lewy","Huntingtina","A DFT envolve uma forma incomum da proteína tau, que desorganiza as atividades celulares e causa morte."],
+["Qual quadro inicial é típico da demência frontotemporal?","Alteração de personalidade, comportamento e linguagem, e só depois da memória","Perda de memória isolada por anos","Tremor de repouso e rigidez","Perda súbita de consciência","A DFT afeta primeiro personalidade, comportamento e linguagem, em seguida a memória."],
+["A demência associada ao HIV (HAD) causa:","Destruição ampla da substância branca do cérebro","Perda de dopamina na substância negra","Acúmulo de corpos de Lewy","Degeneração do tálamo","Na ressonância, aparecem hiperintensidades difusas e simétricas na substância branca profunda."],
+["A doença de Huntington é:","Hereditária, causada por falha genética da proteína huntingtina","Causada por príons","Causada por trauma craniano repetido","Causada pela deficiência de tiamina","A doença causa degeneração em muitas regiões do cérebro e do cordão espinhal."],
+["A demência pugilística (síndrome do boxe) é causada por:","Traumas cranianos repetidos","Infecção pelo HIV","Falha genética hereditária","Deficiência de vitamina B12","Também chamada encefalopatia traumática crônica; os sintomas mais comuns são demência e parkinsonismo."],
+["A doença de Creutzfeldt-Jakob está associada a:","Uma forma incomum de proteína chamada príon","Corpos de Lewy","Proteína huntingtina","Falta de tiamina","O príon pode ser transmitido hereditariamente, por tecidos contaminados em procedimentos médicos ou por consumo de bovinos com BSE ('vaca louca')."],
+["A demência de Parkinson resulta da perda de células cerebrais produtoras de:","Dopamina","Acetilcolina","Serotonina","Glutamato","Cerca de 20% das pessoas com Parkinson desenvolvem demência após os 70 anos."],
+["A síndrome de Wernicke-Korsakoff é provocada pela deficiência de:","Tiamina","Vitamina C","Vitamina D","Ferro","A má nutrição causa deficiência de tiamina e degeneração dos corpos mamilares, ligados à memória."],
+["Idosa de 75 anos apresenta processamento mais lento e leve esquecimento, sem prejuízo nas AVD. Segundo o material, isso:","São mudanças normais, não consideradas sinais de demência","Já confirma demência de Alzheimer","Indica demência vascular","Indica doença de Creutzfeldt-Jakob","No declínio cognitivo relacionado ao envelhecimento, o cérebro pode diminuir de volume e alguns neurônios se perdem, sem caracterizar demência."],
+["A homocisteína plasmática, citada entre os fatores de risco para demência, é:","Um aminoácido construtor de proteína","Uma vitamina do complexo B","Um hormônio tireoidiano","Uma lipoproteína","O slide cita ainda idade, genética, fumo, disfunção do colesterol, diabetes e síndrome de Down."],
+["O Miniexame do Estado Mental (MEEM) tem pontuação de:","0 a 30, avaliando orientação, memória e atenção","0 a 100, avaliando apenas linguagem","0 a 10, avaliando apenas praxia","1 a 5, avaliando humor","O ponto de corte do MEEM varia com a escolaridade."],
+["O MoCA (Avaliação Cognitiva de Montreal) se destaca por:","Maior sensibilidade para detectar declínios mais leves","Ser exame de imagem","Ser exame de sangue","Avaliar apenas a audição","O MoCA também pontua de 0 a 30."],
+["Qual exame sanguíneo faz parte da investigação de causas reversíveis de demência?","Vitamina B12 e ácido fólico","Troponina","Dímero-D","Hemocultura","Também se pedem hemograma, TSH e T4 livre, função renal e hepática, glicemia e sorologias para sífilis (VDRL) e HIV."],
+["Os inibidores da colinesterase atuam:","Aumentando os níveis de acetilcolina no cérebro","Bloqueando o glutamato","Aumentando a dopamina","Reduzindo a acetilcolina","São indicados para quadros leves a moderados (Alzheimer, corpos de Lewy, Parkinson): donepezila, rivastigmina e galantamina."],
+["A memantina é um fármaco:","Antagonista do receptor NMDA, indicado para fases moderadas a graves de Alzheimer","Inibidor da colinesterase para fases leves","Antipsicótico","Analgésico opioide","Bloqueia a ação do glutamato e pode ser usada isoladamente ou combinada aos inibidores da colinesterase."],
+["No estágio avançado da demência, o tratamento foca em:","Cuidado de suporte e paliativo: aliviar sintomas, conforto, tratamento endovenoso e mudança de decúbito","Cura da doença de base","Reabilitação intensiva de alta complexidade","Apenas exames de imagem","O objetivo é conforto e alívio de sintomas."],
+["Qual medida é citada como prevenção ou retardo da demência?","Atividades intelectuais estimulantes (xadrez, palavras cruzadas, instrumentos musicais, interação social)","Repouso absoluto","Dieta rica em sal","Isolamento social","O material cita também baixar homocisteína (complexo B), LDL, controlar inflamação (PCR) e pressão arterial, exercitar-se e educação."],
+["No cuidado à pessoa com demência, quanto ao ambiente de moradia:","Facas afiadas, ferramentas perigosas e químicos devem ser removidos, instalando-se instrumentos de proteção e auxílio","Tudo deve ser mantido ao alcance para estimular a autonomia","Não há risco no ambiente doméstico","O paciente deve ficar sozinho","O ambiente apresenta muitos perigos e obstáculos que precisam ser removidos."],
+
+// ===== PESSOA IDOSA FRÁGIL =====
+["Segundo o material, o pico da maioria das funções biológicas relacionadas à idade ocorre antes dos:","35 anos","20 anos","50 anos","65 anos","Depois do pico, as funções declinam gradual e linearmente, com pouco efeito nas atividades diárias em condições normais."],
+["As perdas funcionais durante o envelhecimento têm como causa primária:","As doenças, mais do que o envelhecimento normal","Somente o envelhecimento normal","O sedentarismo isolado","A aposentadoria","Frase do slide: as doenças, mais do que o envelhecimento normal, são a causa primária das perdas funcionais."],
+["O objetivo da gerontogeriatria é:","Melhorar a qualidade de vida dos idosos, e não apenas acrescentar anos à vida","Aumentar apenas a longevidade","Tratar somente doenças agudas","Substituir a atenção primária","O foco é a qualidade de vida."],
+["A fragilidade no idoso aumenta o risco de:","Quedas, dependência funcional, hospitalização, institucionalização e óbito","Apenas quedas","Longevidade sem agravos","Melhora funcional espontânea","Esses são os desfechos adversos associados à fragilidade."],
+["A fragilidade multidimensional é a situação do idoso com:","Redução da capacidade funcional e/ou da capacidade de adaptação às agressões biopsicossociais","Doença aguda isolada","Apenas perda de peso","Apenas baixa escolaridade","Isso gera maior vulnerabilidade ao declínio funcional, à institucionalização e ao óbito."],
+["Para o material, saúde é:","O máximo bem-estar biopsicossocial, e não simplesmente a ausência de doenças","Apenas ausência de doenças","Apenas bem-estar físico","Ausência de internações","Conceito ampliado de saúde apresentado no slide."],
+["As condições de saúde associadas a desfechos adversos na fragilidade multidimensional agrupam-se nos componentes:","Clínico-funcional e sociofamiliar","Biológico e genético","Hospitalar e ambulatorial","Cognitivo e motor","O componente clínico-funcional envolve a independência nas AVD; o sociofamiliar, a rede de apoio."],
+["O componente sociofamiliar da fragilidade multidimensional refere-se à:","Insuficiência da rede de apoio familiar ou do suporte social","Perda de peso","Presença de polifarmácia","Lentidão da marcha","Insuficiência de apoio familiar ou social também agrava a fragilidade."],
+["A classificação clínico-funcional da pessoa idosa divide os idosos em:","Robustos, em risco de fragilização e frágeis","Ativos, inativos e acamados","Jovens-idosos, idosos e muito idosos","Independentes, dependentes e semidependentes","Os frágeis subdividem-se em baixa complexidade, alta complexidade e fase final de vida."],
+["Idosos frágeis de baixa complexidade são aqueles com:","Declínio funcional estabelecido e baixo potencial de reversibilidade, com foco na prevenção da piora funcional","Alto potencial de ganho funcional","Sobrevida estimada menor que seis meses","Independência total","Nesses idosos o acompanhamento especializado não precisa ser intensivo."],
+["Idosos frágeis de alta complexidade:","Têm dependência nas AVD associada a condições de difícil manejo e elevado potencial de ganho funcional ou de qualidade de vida","Têm baixo potencial de reversibilidade","Estão em fase final de vida","São independentes","São os que mais se beneficiam do acompanhamento intensivo de equipes geriátrico-gerontológicas."],
+["Idoso frágil em fase final de vida é aquele com dependência funcional estabelecida e sobrevida estimada:","Menor que seis meses, com foco no cuidado paliativo","Maior que cinco anos","Entre um e dois anos","Indefinida, com foco em reabilitação intensiva","O cuidado paliativo baseia-se no conforto do paciente e de seus familiares."],
+["As atividades básicas de vida diária (ABVD) são:","Tarefas cotidianas diretamente relacionadas à sobrevivência","Tarefas de manutenção da vida em comunidade","Atividades de lazer e trabalho voluntário","Atividades de educação formal","As instrumentais (AIVD) envolvem a manutenção da vida em comunidade."],
+["As atividades instrumentais de vida diária (AIVD) são:","Tarefas envolvidas na manutenção da vida em comunidade","Tarefas diretamente relacionadas à sobrevivência","Atividades de alto nível cognitivo e social","Atividades apenas de higiene","Exemplo de diferença: ABVD = sobrevivência; AIVD = vida em comunidade."],
+["As atividades avançadas de vida diária (AAVD) subdividem-se nos domínios:","Físico, lazer, social e produtivo","Físico, nutricional e hídrico","Motor, sensorial e auditivo","Hospitalar, domiciliar e ambulatorial","Exigem maiores níveis de funções cognitivas, físicas, psicológicas e sociais, influenciadas por padrões motivacionais e culturais."],
+["Qual é a sequência típica de perdas funcionais associada ao declínio cognitivo?","AAVD, depois AIVD, depois ABVD","ABVD, depois AIVD, depois AAVD","AIVD, depois ABVD, depois AAVD","Todas simultaneamente","O desempenho das AAVD é fator protetor para o desenvolvimento de declínio cognitivo."],
+["Os 10 estratos clínico-funcionais agrupam-se em:","Idoso robusto (1 a 3), em risco de fragilização (4 e 5) e frágil (6 a 10)","Robusto (1 a 5) e frágil (6 a 10)","Robusto (1 e 2), risco (3 a 5) e frágil (6 a 10)","Robusto (1 a 4), risco (5 a 7) e frágil (8 a 10)","Essa é a estratificação de risco clínico-funcional apresentada."],
+["O idoso do estrato 1 caracteriza-se por:","Grau máximo de vitalidade, independente em AAVD, AIVD e ABVD, sem doenças ou fatores de risco além da idade","Hipertensão descontrolada","Declínio parcial das AIVD","Dependência completa nas ABVD","Estrato 1: envelheceram livres de doenças ou outras condições preditoras de desfechos adversos."],
+["Qual condição caracteriza o estrato 2?","Hipertensão ou diabetes controlados e sem lesão de órgão-alvo, e/ou fatores de risco como tabagismo, dislipidemia, osteopenia e depressão leve","Insuficiência cardíaca","AVC prévio","Dependência para AIVD","O estrato 2 tem condições de menor complexidade clínica, com independência total."],
+["Idoso independente em todas as AAVD, AIVD e ABVD, mas com hipertensão descontrolada e depressão moderada/grave, enquadra-se no estrato:","3 (idoso robusto)","1","5 (risco de fragilização)","7 (frágil)","O estrato 3 reúne doenças crônico-degenerativas de maior complexidade (AVC, DRC, insuficiência cardíaca, DPOC, câncer não cutâneo, fibrilação atrial, Parkinson, anemia etc.) sem declínio funcional."],
+["O estrato 4 (risco de fragilização) inclui idosos independentes que apresentam:","Perda de peso significativa, fatigabilidade, baixo nível de atividade física, comprometimento cognitivo leve ou comorbidades múltiplas","Dependência total nas AIVD","Dependência completa nas ABVD","Ausência de qualquer fator de risco","Também polifarmácia, 5 ou mais condições crônicas e internação recente nos últimos 6 meses."],
+["O estrato 5 corresponde ao idoso independente para AIVD e ABVD, mas com:","Limitações nas AAVD e evidências clínicas de redução significativa da capacidade aeróbica/muscular","Dependência para AIVD","Semidependência nas ABVD","Dependência completa","Estrato 5 ainda é risco de fragilização, com declínio funcional iminente."],
+["O estrato 6 (idoso frágil) é caracterizado por:","Independência para ABVD e declínio funcional parcial nas AIVD (dependência parcial)","Independência total","Dependência completa nas ABVD","Declínio em todas as AIVD com dependência total","Estrato 6 inicia os idosos frágeis, com declínio funcional estabelecido."],
+["O estrato 7 apresenta:","Independência para ABVD e declínio funcional em todas as AIVD","Dependência para ABVD e AIVD","Independência para todas as atividades","Declínio apenas nas AAVD","O slide descreve esse estrato como de dependência total (completa) nas AIVD, com ABVD preservadas."],
+["No estrato 8, o idoso apresenta:","Dependência para AIVD e semidependência nas ABVD (comprometimento de uma função como banhar-se, vestir-se ou uso do banheiro)","Independência nas ABVD","Dependência completa em todas as ABVD","Apenas limitação nas AAVD","Estrato 8: dependência para AIVD e semidependência nas ABVD."],
+["No estrato 9, a única ABVD preservada é:","Alimentar-se sozinho","Banhar-se","Transferência","Continência","No estrato 9 há dependência para banhar-se, vestir-se, uso do banheiro, continência e transferência."],
+["O estrato 10 corresponde ao idoso com:","Dependência completa para as ABVD, no grau máximo de fragilidade, necessitando ajuda até para se alimentar","Apenas dependência parcial","Independência para ABVD","Limitação somente nas AAVD","Estrato 10: máximo de dependência funcional."],
+["O idoso frágil tem declínio funcional estabelecido e dependência em virtude de incapacidades como:","Incapacidade cognitiva, instabilidade postural, imobilidade, incontinência esfincteriana e incapacidade comunicativa","Apenas hipertensão","Apenas dislipidemia","Somente perda de peso","Os agravos podem ser ampliados por iatrogenia e insuficiência familiar e social."],
+["Quais condições crônicas indicam declínio funcional iminente?","Polipatologia, polifarmácia, internação recente, transtorno cognitivo leve e sarcopenia","Apenas doença aguda","Boa saúde e independência total","Apenas trauma","Essas condições levam a desfechos adversos como dependência, institucionalização, hospitalização e morte."],
+["Qual NÃO é um dos quatro princípios essenciais da atenção integral à saúde da pessoa idosa?","Foco exclusivo no tratamento de doenças individuais","Avaliação multidimensional ou abrangente","Plano de cuidados elaborado, implementado e monitorado","Engajamento ativo do usuário e da família no cuidado","Os princípios superam o simples diagnóstico e tratamento das doenças individuais; incluem ainda a comunicação e coordenação entre profissionais e serviços."],
+["O cuidado oferecido ao idoso com múltiplas condições crônicas deve ser implementado com:","Qualidade, resolutividade e custo-eficácia","Rapidez, sigilo e baixo custo","Isolamento, repouso e vigilância","Foco apenas em medicamentos","Esses são os princípios da atenção integral à saúde da pessoa idosa apresentados no material."]
+];
+let order=[],cur=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function startQuiz(){order=shuffle(DATA.map((_,i)=>i));cur=0;score=0;
+  $('start').classList.add('hidden');$('end').classList.add('hidden');$('quiz').classList.remove('hidden');render();}
+function render(){
+  answered=false;const d=DATA[order[cur]];
+  $('count').textContent='Questão '+(cur+1)+' de '+DATA.length;
+  $('pts').textContent='Acertos: '+score;
+  $('prog').style.width=(cur/DATA.length*100)+'%';
+  $('qt').textContent=d[0];
+  const opts=shuffle(d.slice(1,5).map((t,i)=>({t,ok:i===0})));
+  const box=$('opts');box.innerHTML='';
+  opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt';
+    b.innerHTML='<span class="l">'+'ABCD'[i]+'</span><span></span>';
+    b.lastChild.textContent=o.t;
+    b.onclick=()=>pick(b,o.ok,opts,d[5]);
+    box.appendChild(b);
+  });
+  $('fb').style.display='none';
+  $('next').disabled=true;
+  $('next').textContent=cur===DATA.length-1?'Ver resultado':'Próxima';
+}
+function pick(btn,ok,opts,exp){
+  if(answered)return;answered=true;
+  const bs=[...document.querySelectorAll('.opt')];
+  bs.forEach((b,i)=>{b.disabled=true;if(opts[i].ok)b.classList.add('ok')});
+  if(ok)score++;else btn.classList.add('bad');
+  $('pts').textContent='Acertos: '+score;
+  const fb=$('fb');fb.innerHTML='<b>'+(ok?'✔ Correto! ':'✘ Incorreto. ')+'</b>';
+  fb.appendChild(document.createTextNode(exp));
+  fb.style.borderLeftColor=ok?'#16a34a':'#dc2626';fb.style.display='block';
+  $('next').disabled=false;
+}
+function next(){cur++;if(cur<DATA.length)render();else finish();}
+function finish(){
+  $('quiz').classList.add('hidden');$('end').classList.remove('hidden');
+  const pct=Math.round(score/DATA.length*100);
+  $('final').textContent=pct+'%';$('sc').textContent=score;$('er').textContent=DATA.length-score;
+  let lvl,msg;
+  if(pct>=90){lvl='Excelente';msg='Domínio impecável do conteúdo!'}
+  else if(pct>=70){lvl='Muito bom';msg='Ótimo desempenho! Revise os pontos que errou.'}
+  else if(pct>=50){lvl='Bom';msg='Você está no caminho. Vale revisar os slides novamente.'}
+  else{lvl='Precisa revisar';msg='Releia o material com calma e tente de novo.'}
+  $('level').textContent=lvl;$('msg').textContent=msg;
+}
+</script>
+</body>
+</html>
